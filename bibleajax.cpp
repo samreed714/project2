@@ -121,10 +121,9 @@ int main() {
    */
 
   // Create Bible object to process the raw text file
-  //Bible webBible("/home/class/csc3004/Bibles/web-complete");
-
   Bible webBible;
 
+  //set webBible to correct version
   if (versionInt == 1) {
       webBible = Bible("/home/class/csc3004/Bibles/web-complete");
   }
@@ -140,6 +139,7 @@ int main() {
   else if (versionInt == 5) {
       webBible = Bible("/home/class/csc3004/Bibles/ylt-complete");
   }
+  //Default to WEB if version is invalid
   else {
       webBible = Bible("/home/class/csc3004/Bibles/web-complete");
   }
