@@ -53,34 +53,98 @@ int main() {
   form_iterator chapter = cgi.getElement("chapter");
   form_iterator verse = cgi.getElement("verse");
   form_iterator nv = cgi.getElement("num_verse");
+  form_iterator version = cgi.getElement("version");
 
   // Convert and check input data
   bool validInput = false;
+  string errorMessage = "Invalid Chapter";
+  string errorDesc = " ";
   if (chapter != cgi.getElements().end()) {
 	 int chapterNum = chapter->getIntegerValue();
 	 if (chapterNum > 150) {
-		 cout << "<p>The chapter number (" << chapterNum << ") is too high.</p>" << endl;
+		 //cout << "<p>The chapter number (" << chapterNum << ") is too high.</p>" << endl;
+         errorDesc = string("The chapter number ") + to_string(chapterNum) +string(" is too high.");
 	 }
 	 else if (chapterNum <= 0) {
-		 cout << "<p>The chapter must be a positive number.</p>" << endl;
+		 //cout << "<p>The chapter must be a positive number.</p>" << endl;
+         errorDesc = "The chapter must be a positive number";
 	 }
 	 else
 		 validInput = true;
   }
   
   /* TO DO: OTHER INPUT VALUE CHECKS ARE NEEDED ... but that's up to you! */
+  //Book should be greater than 0 and less than 66
+  int b = book->getIntegerValue();
+  if (b > 66) {
+      validInput = false;
+      errorMessage = "Invalid Book";
+      //cout << "<p>There are only 66 books of the Bible.</p>";
+      errorDesc = "There are only 666 books of the Bible.";
+  }
+
+  //already checked
+  int c = chapter->getIntegerValue();
+
+  //Verse should be greater than 0 and less than 176
+  int v = verse->getIntegerValue();
+  if (v > 176) {
+      validInput = false;
+      errorMessage = "Invalid Verse";
+      //cout << "<p>No chapters of the Bible have more than 176 verses.</p>";
+      errorDesc = "No chapters of the Bible have more than 176 verses";
+  }
+  if (v < 1) {
+      validInput = false;
+      errorMessage = "Invalid Verse";
+      //cout << "<p>Verse must be greater than 0</p>";
+      errorDesc = "Verse must be greater than 0";
+  }
+
+  //Number of verses should not be less than 1. If it is, only print 1 verse
+  int v2 = nv->getIntegerValue();
+  if (v2 < 1) {
+      cout << "<p style=\"color:Red;\">Number of verses should be 1 or more. Printing 1 verse: </p>" << endl;
+  }
+
+  //Version number should 1-5
+  int versionInt = version->getIntegerValue();
+  if (versionInt > 5) {
+      cout << "<p style=\"color:Red;\">There are only 5 versions. Using WEB version</p>";
+  }
+  if (versionInt < 1) {
+      cout << "<p style=\"color:Red;\">Version cannot be less than 0. Using WEB version</p>";
+  }
 
   /* TO DO: PUT CODE HERE TO CALL YOUR BIBLE CLASS FUNCTIONS
    *        TO LOOK UP THE REQUESTED VERSES
    */
 
   // Create Bible object to process the raw text file
-  Bible webBible("/home/class/csc3004/Bibles/web-complete");
+  //Bible webBible("/home/class/csc3004/Bibles/web-complete");
+
+  Bible webBible;
+
+  if (versionInt == 1) {
+      webBible = Bible("/home/class/csc3004/Bibles/web-complete");
+  }
+  else if (versionInt == 2) {
+      webBible = Bible("/home/class/csc3004/Bibles/dby-complete");
+  }
+  else if (versionInt == 3) {
+      webBible = Bible("/home/class/csc3004/Bibles/kjv-complete");
+  }
+  else if (versionInt == 4) {
+      webBible = Bible("/home/class/csc3004/Bibles/webster-complete");
+  }
+  else if (versionInt == 5) {
+      webBible = Bible("/home/class/csc3004/Bibles/ylt-complete");
+  }
+  else {
+      webBible = Bible("/home/class/csc3004/Bibles/web-complete");
+  }
+
   LookupResult result;
- 
-  int b = book->getIntegerValue();
-  int c = chapter->getIntegerValue();
-  int v = verse->getIntegerValue();
 
   string bookNames[66] = {
         "Genesis",
@@ -150,10 +214,19 @@ int main() {
         "Jude",
         "Revelation"
   };
+  string versionNames[5] = {
+      "WEB",
+      "DBY",
+      "KJV",
+      "WBSTR",
+      "YLT"
+  };
 
   // Create a reference from the numbers
   Ref ref(b, c, v);
+  Ref currentRef = ref.next();
   Verse lookedUpVerse = webBible.lookup(ref, result);
+  Verse currentVerse;
 
   /* SEND BACK THE RESULTS
    * Finally we send the result back to the client on the standard output stream
@@ -161,14 +234,38 @@ int main() {
    * This string will be inserted as is inside a container on the web page, 
    * so we must include HTML formatting commands to make things look presentable!
    */
+
+  //check for errors from lookup
+  if (result != SUCCESS) {
+      if (result == NO_BOOK) {
+          errorMessage = "Invalid Book";
+      }
+      if (result == NO_CHAPTER) {
+          errorMessage = "Invalid Chapter";
+      }
+      if (result == NO_VERSE) {
+          errorMessage = "Invalid Verse";
+      }
+      validInput = false;
+  }
   if (validInput) {
 	cout << "Search Type: <b>" << **st << "</b>" << endl;
 	cout << "<p>Your result: "
-		 << bookNames[b - 1] << " " << **chapter << ":" << **verse << " "
-		<< "<em>" << lookedUpVerse.getVerse() << "</em></p>" << endl;
+		 << bookNames[b - 1] << " " << **chapter << ":" << **verse << " (" << versionNames[versionInt - 1] << "): " 
+		<< "<em>" << lookedUpVerse.getVerse() << "</em>";
+    //Print the rest of the verses. i = 1 becase one verse has already been displayed
+    for (int i = 1; i < v2; i++) {                                           
+        currentVerse = webBible.nextVerse(currentRef, result);
+        cout << " <sup><b>" << currentRef.getVerse() << "</sup></b>";
+        cout << "<em> " << currentVerse.getVerse() << "</em>";
+        currentRef = currentRef.next();
+    }
+    cout << "</p>" << endl;
+
   }
   else {
-	  cout << "<p>Invalid Input: <em>report the more specific problem.</em></p>" << endl;
+	  cout << "<p style=\"color:Red;\">Error: <em>" << errorMessage << "</em></p>" << endl;
+      cout << "<p style=\"color:Red;\">Description: <em>" << errorDesc << "</em></p>" << endl;
   }
   return 0;
 }

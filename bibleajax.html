@@ -60,7 +60,8 @@ function getresponse () {
 		+ "&book=" + document.getElementById('book').value
 		+ "&chapter=" + document.getElementById('chapter').value
 		+ "&verse=" + document.getElementById('verse').value
-		+ "&num_verse=" + document.getElementById('num_verse').value,
+		+ "&num_verse=" + document.getElementById('num_verse').value
+		+ "&version=" +document.getElementById('version').value,
 		true); // true indicates asynchronous request
 	XMLHttp.onreadystatechange=function() { // callback function
 		if (XMLHttp.readyState == XMLHttp.DONE)
@@ -163,6 +164,19 @@ function getresponse () {
 <option value="66">Revelation
 </select>
 </td>
+</tr>
+
+<tr>
+	<td align=right valign=top>Version</td>
+	<td align=left valign=top>
+		<select name="version" id=version>
+			<option value="1">World English Bible
+			<option value="2">Darby
+			<option value="3">King James Version
+			<option value="4">Webster
+			<option value="5">Youth Living Translation
+		</select>
+	</td>
 </tr>
 
 <tr>

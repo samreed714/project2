@@ -42,6 +42,7 @@ Verse Bible::lookup(Ref ref, LookupResult& status) {
 			//If the chapter has been found, but currentRef moved on to the next chapter, there is no verse
 			if (chapFound && (currentRef.getChap() > ref.getChap())) {
 				status = NO_VERSE;
+				//break;
 			}
 			//If the verse is found, break the loop
 			if (currentRef == ref) {
